@@ -1,0 +1,7 @@
+/target
+/out
+Cargo.lock.bak
+test_snapshots/
+.stellar/
+*.env
+.env
