@@ -8,6 +8,10 @@ AvenirFlow escrows the full committed amount in the contract at creation
 time (a real token transfer, not just bookkeeping), so a schedule or stream
 can never promise more than it can pay.
 
+> **Live on testnet:** [`CDVC7T4D2LY6JRKKURNPQ3FFBJ36EZYJZXSHPDJPJCX3V57TMPCGSY3K`](https://stellar.expert/explorer/testnet/contract/CDVC7T4D2LY6JRKKURNPQ3FFBJ36EZYJZXSHPDJPJCX3V57TMPCGSY3K)
+> ([wasm hash `21f774d318b38289d5c1ea8571183dd9fe78067c748dbe56327ebc9153e958ce`](https://stellar.expert/explorer/testnet/contract/CDVC7T4D2LY6JRKKURNPQ3FFBJ36EZYJZXSHPDJPJCX3V57TMPCGSY3K)) —
+> see [`deployments/`](deployments/) for the current id per network.
+
 ## Contents
 
 - [Primitives](#primitives)
@@ -149,7 +153,7 @@ Three scripts under `scripts/` cover the full flow:
 ./scripts/setup_identity.sh avenirflow-deployer
 
 # 2. Build (optimized) and deploy; writes the contract id to
-#    .stellar/contract-id.testnet
+#    deployments/testnet-contract-id.txt
 ./scripts/deploy_testnet.sh avenirflow-deployer
 
 # 3. Optional: walk through a live example — create a short vesting

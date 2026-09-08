@@ -6,15 +6,15 @@
 #
 # Defaults to the "avenirflow-deployer" identity created by
 # setup_identity.sh. Writes the deployed contract id to
-# .stellar/contract-id.testnet for the other scripts to pick up.
+# deployments/testnet-contract-id.txt for the other scripts to pick up.
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 IDENTITY="${1:-avenirflow-deployer}"
 NETWORK="testnet"
-OUT_DIR=".stellar"
-OUT_FILE="$OUT_DIR/contract-id.$NETWORK"
+OUT_DIR="deployments"
+OUT_FILE="$OUT_DIR/$NETWORK-contract-id.txt"
 
 if ! command -v stellar >/dev/null 2>&1; then
   echo "error: stellar-cli not found. Install it with:" >&2

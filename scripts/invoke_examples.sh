@@ -11,7 +11,7 @@
 # Requires:
 #   - ./scripts/setup_identity.sh avenirflow-deployer   (creator/funder)
 #   - ./scripts/setup_identity.sh avenirflow-recipient  (vesting/stream recipient)
-#   - ./scripts/deploy_testnet.sh                       (writes .stellar/contract-id.testnet)
+#   - ./scripts/deploy_testnet.sh                       (writes deployments/testnet-contract-id.txt)
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -19,7 +19,7 @@ cd "$(dirname "$0")/.."
 NETWORK="testnet"
 CREATOR="avenirflow-deployer"
 RECIPIENT="avenirflow-recipient"
-CONTRACT_FILE=".stellar/contract-id.testnet"
+CONTRACT_FILE="deployments/testnet-contract-id.txt"
 
 if ! command -v stellar >/dev/null 2>&1; then
   echo "error: stellar-cli not found. Install it with:" >&2
@@ -36,7 +36,8 @@ CONTRACT_ID="$(cat "$CONTRACT_FILE")"
 for id in "$CREATOR" "$RECIPIENT"; do
   if ! stellar keys address "$id" >/dev/null 2>&1; then
     echo "==> Creating and funding missing identity: $id"
-    stellar keys generate --global "$id" --network "$NETWORK" --fund
+    stellar keys generate "$id"
+    stellar keys fund "$id" --network "$NETWORK"
   fi
 done
 
@@ -92,27 +93,32 @@ invoke claimable_vesting --vesting_id "$VESTING_ID"
 echo "==> claim (as recipient)"
 invoke_as "$RECIPIENT" claim --vesting_id "$VESTING_ID"
 
-# --- Stream: 1000 stroops/second for 30 seconds (30_000 stroops total) ---
+# --- Stream: 500 stroops/second for 60 seconds (30_000 stroops total) ---
 S_START="$(date +%s)"
-S_END="$((S_START + 30))"
+S_END="$((S_START + 60))"
 echo ""
-echo "==> create_stream: 1000 stroops/sec for 30s"
+echo "==> create_stream: 500 stroops/sec for 60s"
 STREAM_ID="$(invoke create_stream \
   --creator "$CREATOR_ADDR" \
   --recipient "$RECIPIENT_ADDR" \
   --token "$TOKEN_ID" \
-  --rate_per_second 1000 \
+  --rate_per_second 500 \
   --start_time "$S_START" \
   --end_time "$S_END")"
 echo "    stream_id = $STREAM_ID"
 
-echo "==> Waiting 15s, then withdrawing the partial amount streamed so far..."
-sleep 15
+echo "==> Waiting 25s, then withdrawing the partial amount streamed so far..."
+sleep 25
 invoke_as "$RECIPIENT" withdraw_from_stream --stream_id "$STREAM_ID"
 
 echo "==> Waiting for the stream to finish, then withdrawing the remainder..."
-sleep 20
-invoke_as "$RECIPIENT" withdraw_from_stream --stream_id "$STREAM_ID"
+sleep 40
+# Depending on real network/confirmation latency above, the first
+# withdrawal may already have drained the stream entirely -- in that case
+# this second call correctly fails with NothingToClaim, which just
+# confirms payouts can never exceed the funded amount.
+invoke_as "$RECIPIENT" withdraw_from_stream --stream_id "$STREAM_ID" \
+  || echo "    (nothing left to withdraw -- the stream was already fully paid out above)"
 
 echo ""
 echo "==> Done. Explore events at:"

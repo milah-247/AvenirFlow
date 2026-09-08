@@ -22,7 +22,7 @@ if stellar keys address "$IDENTITY" >/dev/null 2>&1; then
   echo "==> Identity '$IDENTITY' already exists."
 else
   echo "==> Generating identity '$IDENTITY'"
-  stellar keys generate --global "$IDENTITY" --network "$NETWORK" --fund
+  stellar keys generate "$IDENTITY"
 fi
 
 ADDRESS="$(stellar keys address "$IDENTITY")"
